@@ -1,0 +1,33 @@
+---
+- name: Ensure required packages are installed
+  ansible.builtin.package:
+    name: "{{ percona_required_packages }}"
+    state: installed
+
+- name: Ensure RPM GPG key is imported
+  ansible.builtin.rpm_key:
+    key: "{{ percona_rpm_key_url }}"
+
+- name: Ensure Percona repositories are installed
+  ansible.builtin.package:
+    name: "{{ percona_repo_baseurl }}/{{ percona_repo_release }}.noarch.rpm"
+    state: present
+
+- name: Install Percona XtraDB when not installed
+  block:
+
+    - name: Ensure Percona pxc is enabled
+      ansible.builtin.command: "percona-release setup pxc{{ percona_version }} -y"
+      changed_when: false
+
+    - name: Ensure Percona XtraDB packages are installed
+      ansible.builtin.package:
+        name: "{{ percona_packages }}"
+        state: installed
+    
+    - name: Ensure Mysql service is temporary started
+      ansible.builtin.service:
+        name: "{{ percona_mysql_daemon }}"
+        state: started
+
+  when: not arbiter

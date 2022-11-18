@@ -1,0 +1,81 @@
+---
+# Variable configuration.
+- name: Include OS-specific variables.
+  ansible.builtin.include_vars: "{{ item }}"
+  with_first_found:
+    - files:
+        - "vars/{{ ansible_os_family }}-{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yml"
+        - "vars/{{ ansible_os_family }}-{{ ansible_distribution_major_version }}.yml"
+        - "vars/{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yml"
+        - "vars/{{ ansible_os_family }}.yml"
+      skip: true
+
+- name: Define percona_rpm_key_url.
+  ansible.builtin.set_fact:
+    percona_rpm_key_url: "{{ __percona_rpm_key_url }}"
+  when: percona_rpm_key_url is not defined
+
+- name: Define percona_repo_baseurl.
+  ansible.builtin.set_fact:
+    percona_repo_baseurl: "{{ __percona_repo_baseurl }}"
+  when: percona_repo_baseurl is not defined
+
+- name: Define percona_repo_release.
+  ansible.builtin.set_fact:
+    percona_repo_release: "{{ __percona_repo_release }}"
+  when: percona_repo_release is not defined
+
+- name: Define percona_version.
+  ansible.builtin.set_fact:
+    percona_version: "{{ __percona_version }}"
+  when: percona_version is not defined
+
+- name: Define percona_required_packages.
+  ansible.builtin.set_fact:
+    percona_required_packages: "{{ __percona_required_packages | list }}"
+  when: 
+    - percona_required_packages is not defined
+
+- name: Define percona_packages 57.
+  ansible.builtin.set_fact:
+    percona_packages: "{{ __percona_packages_57 | list }}"
+  when: 
+    - percona_packages is not defined
+    - percona_version == "57"
+
+- name: Define percona_packages 80.
+  ansible.builtin.set_fact:
+    percona_packages: "{{ __percona_packages_80 | list }}"
+  when: 
+    - percona_packages is not defined
+    - percona_version == "80"
+
+- name: Define percona_mysql_daemon.
+  ansible.builtin.set_fact:
+    percona_mysql_daemon: "{{ __percona_mysql_daemon }}"
+  when: percona_mysql_daemon is not defined
+
+- name: Define mysql_log_error.
+  ansible.builtin.set_fact:
+    mysql_log_error: "{{ __mysql_log_error }}"
+  when: mysql_log_error is not defined
+
+- name: Define mysql_pid_file.
+  ansible.builtin.set_fact:
+    mysql_pid_file: "{{ __mysql_pid_file }}"
+  when: mysql_pid_file is not defined
+
+- name: Define mysql_config_file.
+  ansible.builtin.set_fact:
+    mysql_config_file: "{{ __mysql_config_file }}"
+  when: mysql_config_file is not defined
+
+- name: Define mysql_config_include_dir.
+  ansible.builtin.set_fact:
+    mysql_config_include_dir: "{{ __mysql_config_include_dir }}"
+  when: mysql_config_include_dir is not defined
+
+- name: Define mysql_socket.
+  ansible.builtin.set_fact:
+    mysql_socket: "{{ __mysql_socket }}"
+  when: mysql_socket is not defined

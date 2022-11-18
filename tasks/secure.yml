@@ -1,0 +1,23 @@
+---
+- name: Delete anonymous connections
+  community.mysql.mysql_user:
+    name: ""
+    host_all: true
+    state: absent
+  no_log: "{{ percona_no_log }}"
+
+- name: Secure root user
+  community.mysql.mysql_user:
+    name: root
+    host: "{{ item }}"
+  no_log: "{{ percona_no_log }}"
+  loop:
+    - ::1
+    - 127.0.0.1
+    - localhost
+
+- name: Ensure test database is removed if exists
+  community.mysql.mysql_db:
+    name: test
+    login_user: root
+    state: absent

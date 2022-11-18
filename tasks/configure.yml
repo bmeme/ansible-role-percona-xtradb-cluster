@@ -1,0 +1,37 @@
+---
+- name: Stop Mysql service
+  ansible.builtin.service:
+    name: "{{ percona_mysql_daemon }}"
+    state: stopped
+
+- name: "Create include directory {{ mysql_config_include_dir }}"
+  ansible.builtin.file:
+    path: "{{ mysql_config_include_dir }}"
+    state: directory
+    mode: '0755'
+
+- name: Load Percona configuration directory
+  ansible.builtin.lineinfile:
+    name: "{{ mysql_config_file }}"
+    line: "!includedir {{ mysql_config_include_dir }}"
+
+- name: Configure Percona XtraDB Cluster
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: 0644
+  loop:
+    - src: templates/mysqld.cnf.j2
+      dest: "{{ mysql_config_include_dir }}/mysqld.cnf.dist"
+    - src: "templates/wsrep.cnf.j2"
+      dest: "{{ mysql_config_include_dir }}/wsrep.cnf.dist"
+
+- name: Append extended configuration
+  ansible.builtin.blockinfile:
+    path: "{{ mysql_config_include_dir }}/mysqld.cnf"
+    block: "{{ mysql_cluster_configuration }}"
+  when: 
+    - mysql_cluster_configuration is defined
+    - mysql_cluster_configuration | length > 0

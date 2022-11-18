@@ -1,0 +1,10 @@
+---
+- name: Converge
+  hosts:
+    - test-cluster-01 
+    - test-cluster-02
+    - test-cluster-03 
+  tasks:
+    - name: "Include bmeme.percona_xtradb_cluster"
+      ansible.builtin.include_role:
+        name: "bmeme.percona_xtradb_cluster"

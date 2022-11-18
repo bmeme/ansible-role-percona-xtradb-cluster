@@ -1,0 +1,25 @@
+---
+- name: Variables configuration
+  ansible.builtin.include_tasks: variables.yml
+
+- name: IPs assetions
+  ansible.builtin.include_tasks: ip.yml
+
+- name: Setup/install tasks (RedHat)
+  ansible.builtin.include_tasks: "setup-{{ ansible_os_family }}.yml"
+
+- name: Configure password
+  ansible.builtin.include_tasks: password.yml
+  when: not arbiter
+
+- name: Secure instances
+  ansible.builtin.include_tasks: secure.yml
+  when: not arbiter
+
+- name: Configure instances
+  ansible.builtin.include_tasks: configure.yml
+  when: not arbiter
+
+- name: Enable cluster
+  ansible.builtin.include_tasks: cluster.yml
+  when: not arbiter

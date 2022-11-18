@@ -1,0 +1,18 @@
+{{ ansible_managed | comment }}
+
+[client]
+socket={{ mysql_socket }}
+
+[mysqld]
+bind_address={{ percona_cluster.ip_address }}
+socket={{ mysql_socket }}
+user=mysql
+datadir={{ mysql_datadir }}
+log-bin
+log_slave_updates
+expire_logs_days=7
+
+server-id={{ percona_cluster.server_id }}
+log-error={{ mysql_log_error }}
+pid-file={{ mysql_pid_file }}
+symbolic-links={{ mysql_symbolic_links }}

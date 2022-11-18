@@ -1,0 +1,8 @@
+---
+percona_cluster:
+  enabled: true
+  name: 'galera-cluster'
+  role: arbiter
+  bootstrapper: false
+  server_id: '1'
+  ip_address: "{{ ansible_default_ipv4.address }}"
