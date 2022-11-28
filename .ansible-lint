@@ -1,0 +1,9 @@
+---
+skip_list:
+  - "305"
+  - "503"
+warn_list:
+  - risky-shell-pipe
+  - experimental
+  - key-order[task]
+  - name[casing]

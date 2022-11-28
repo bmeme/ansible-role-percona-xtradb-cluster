@@ -10,7 +10,7 @@ defaults:
   run:
     working-directory: 'bmeme.percona_xtradb_cluster'
 
-job:
+jobs:
 
   lint:
     name: Lint
