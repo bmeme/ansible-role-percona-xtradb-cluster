@@ -1,0 +1,9 @@
+---
+- name: Ensure defined databases exist
+  community.mysql.mysql_db:
+    login_host: ''
+    login_unix_socket: "{{ mysql_socket }}"
+    name: "{{ item }}"
+    login_user: root
+    state: present
+  loop: "{{ percona_databases }}"

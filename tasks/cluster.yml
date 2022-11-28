@@ -32,29 +32,14 @@
 
   when: not bootstrapper
 
-- name: Stop percona bootstrap service and restart mysql normally on primary node
-  ansible.builtin.service:
-    name: "{{ item.name }}"
-    state: "{{ item.state }}"
-  when: bootstrapper
-  loop:
-    - name: "{{ percona_mysql_daemon }}@bootstrap.service"
-      state: stopped
-    - name: "{{ percona_mysql_daemon }}"
-      state: started
-  
-- name: cluster | pause 5 seconds to let hosts sync
-  ansible.builtin.pause:
-    seconds: 5
-
-- name: Verify if wsrep is successful - check 1
+- name: Verify if wsrep is successfull
   ansible.builtin.shell: >
     mysql -e "show status like 'wsrep%';" |
     grep wsrep_local_state_comment
   register: __percona_cluster_wsrep_check_one
   changed_when: __percona_cluster_wsrep_check_one.rc != 0
 
-- name: cluster | fail if not Synced
+- name: Verify if cluster is synced
   ansible.builtin.fail:
     msg: "Bootstrapping has failed. Please check the logs, and fix"
   when: '"Synced" not in __percona_cluster_wsrep_check_one.stdout'

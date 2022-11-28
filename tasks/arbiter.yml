@@ -1,0 +1,19 @@
+---
+- name: Install arbiter
+  ansible.builtin.package:
+    name: "{{ percona_arbiter_packages }}"
+    state: installed
+
+- name: Place gardb config in /etc/sysconfig/garb
+  ansible.builtin.template:
+    src: garb.j2
+    dest: "{{ garb_config_file }}/garb"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Ensure arbiter is started and enabled on boot
+  ansible.builtin.service:
+    name: "{{ percona_arbiter_daemon }}"
+    state: started
+    enabled: true

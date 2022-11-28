@@ -1,0 +1,14 @@
+---
+- name: Ensure defined users exist and granted
+  community.mysql.mysql_user:
+    login_host: ''
+    login_unix_socket: "{{ mysql_socket }}"
+    name: "{{ item.name }}"
+    password: "{{ item.password }}"
+    encrypted: "{{ item.encrypted }}"
+    priv: "{{ item.privs }}"
+    host: "{{ item.host }}"
+    state: "{{ item.state }}"
+  loop: "{{ percona_users }}"
+  changed_when: false
+  no_log: "{{ percona_no_log }}"

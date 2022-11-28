@@ -1,3 +1,14 @@
+percona_databases:
+  - senato
+
+percona_users:
+  - name: senato_user
+    password: "BuoGh0di?aX;"
+    privs: 'senato.*:ALL,GRANT'
+    state: present
+    encrypted: false
+    host: '%'
+
 mysql_cluster_configuration: |-
   log_warnings=2
   userstat=1

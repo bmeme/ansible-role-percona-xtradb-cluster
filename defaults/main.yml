@@ -8,6 +8,9 @@ percona_cluster:
 percona_cluster_name: "galera-cluster"
 percona_no_log: true
 
+percona_databases: []
+percona_users: []
+
 ## Percona root user/password
 percona_root_user: "root"
 percona_root_password: "S3cr3tS/$"

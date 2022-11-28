@@ -50,6 +50,20 @@
     - percona_packages is not defined
     - percona_version == "80"
 
+- name: Define percona arbiter packages 57
+  ansible.builtin.set_fact:
+    percona_arbiter_packages: "{{ __percona_arbiter_packages_57 | list }}"
+  when: 
+    - percona_arbiter_packages is not defined
+    - percona_version == "57"
+
+- name: Define percona arbiter packages 80
+  ansible.builtin.set_fact:
+    percona_arbiter_packages: "{{ __percona_arbiter_packages_80 | list }}"
+  when: 
+    - percona_arbiter_packages is not defined
+    - percona_version == "80"
+
 - name: Define percona_mysql_daemon.
   ansible.builtin.set_fact:
     percona_mysql_daemon: "{{ __percona_mysql_daemon }}"
@@ -79,3 +93,13 @@
   ansible.builtin.set_fact:
     mysql_socket: "{{ __mysql_socket }}"
   when: mysql_socket is not defined
+
+- name: Define percona_arbiter_daemon.
+  ansible.builtin.set_fact:
+    percona_arbiter_daemon: "{{ __percona_arbiter_daemon }}"
+  when: percona_arbiter_daemon is not defined
+
+- name: Define garb_config_file.
+  ansible.builtin.set_fact:
+    garb_config_file: "{{ __garb_config_file }}"
+  when: garb_config_file is not defined

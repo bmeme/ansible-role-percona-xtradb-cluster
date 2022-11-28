@@ -24,9 +24,9 @@
     mode: 0644
   loop:
     - src: templates/mysqld.cnf.j2
-      dest: "{{ mysql_config_include_dir }}/mysqld.cnf.dist"
+      dest: "{{ mysql_config_include_dir }}/mysqld.cnf"
     - src: "templates/wsrep.cnf.j2"
-      dest: "{{ mysql_config_include_dir }}/wsrep.cnf.dist"
+      dest: "{{ mysql_config_include_dir }}/wsrep.cnf"
 
 - name: Append extended configuration
   ansible.builtin.blockinfile:
