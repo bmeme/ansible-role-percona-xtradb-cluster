@@ -17,13 +17,6 @@ percona_root_password: "S3cr3tS/$"
 percona_sst_user: "sstuser"
 percona_sst_password: "S3cr3tS/$"
 
-## Percona database settings
-# percona_db_enabled: false
-# percona_db_name: "default_db"
-# percona_db_user: "default_user"
-# percona_db_password: "Ch4ng3m3/*"
-# percona_db_host: "localhost"
-
 # Datafile directory.
 mysql_datadir: "/var/lib/mysql"
 

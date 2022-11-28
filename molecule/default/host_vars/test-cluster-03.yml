@@ -1,7 +1,5 @@
 ---
 percona_cluster:
-  enabled: true
-  name: 'galera-cluster'
   role: master
   bootstrapper: true
   server_id: '3'
