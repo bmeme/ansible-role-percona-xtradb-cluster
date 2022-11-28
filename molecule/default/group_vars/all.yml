@@ -1,10 +1,10 @@
 percona_databases:
-  - senato
+  - mynewbranddb
 
 percona_users:
-  - name: senato_user
-    password: "BuoGh0di?aX;"
-    privs: 'senato.*:ALL,GRANT'
+  - name: mynewbranddb_user
+    password: "yie?XuiNaedu"
+    privs: 'mynewbranddb.*:ALL,GRANT'
     state: present
     encrypted: false
     host: '%'
