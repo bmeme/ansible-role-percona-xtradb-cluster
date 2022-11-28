@@ -6,7 +6,7 @@ __percona_version: "57"
 __percona_mysql_daemon: mysql
 __percona_arbiter_daemon: garb
 __percona_required_packages:
-  - python3-PyMySQL
+  - MySQL-python
   - gnupg2
   - socat
   - python3

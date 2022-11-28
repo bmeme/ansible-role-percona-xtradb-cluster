@@ -2,7 +2,7 @@
 - name: Variables configuration
   ansible.builtin.include_tasks: variables.yml
 
-- name: IPs assetions
+- name: IPs assertions
   ansible.builtin.include_tasks: ip.yml
 
 - name: Setup/install tasks (RedHat)
@@ -23,3 +23,19 @@
 - name: Enable cluster
   ansible.builtin.include_tasks: cluster.yml
   when: not arbiter
+
+- name: Enable arbiter
+  ansible.builtin.include_tasks: arbiter.yml
+  when: arbiter
+
+- name: Create databases
+  ansible.builtin.include_tasks: databases.yml
+  when: 
+    - percona_databases | length > 0
+    - bootstrapper
+
+- name: Create users
+  ansible.builtin.include_tasks: users.yml
+  when: 
+    - percona_users | length > 0
+    - bootstrapper
