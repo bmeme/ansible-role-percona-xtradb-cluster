@@ -12,7 +12,7 @@
   ansible.builtin.set_fact:
     all_ips: >-
       {{ ansible_play_hosts |
-      map('extract', hostvars, ['percona_cluster', 'ip_address'] ) |
+      map('extract', hostvars, ['percona_cluster', 'ip_address']) |
       join(',') }}
 
 - name: ip addr | convert all ip addressess fact to a list
