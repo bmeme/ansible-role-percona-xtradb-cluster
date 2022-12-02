@@ -6,7 +6,7 @@
 
 - name: Place gardb config in /etc/sysconfig/garb
   ansible.builtin.template:
-    src: garb.j2
+    src: templates/garb.j2
     dest: "{{ garb_config_file }}/garb"
     owner: root
     group: root

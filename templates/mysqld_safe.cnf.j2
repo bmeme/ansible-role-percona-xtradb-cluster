@@ -1,0 +1,6 @@
+{{ ansible_managed | comment }}
+
+[mysqld_safe]
+pid-file={{ mysql_pid_file }}
+socket={{ mysql_socket }}
+nice= 0
