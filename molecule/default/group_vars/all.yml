@@ -9,6 +9,9 @@ percona_users:
     encrypted: false
     host: '%'
 
+mysql_datadir: "/var/lib/clustered-mysql"
+mysql_socket: "/var/lib/clustered-mysql/mysql.sock"
+
 mysql_cluster_configuration: |-
   log_warnings=2
   userstat=1

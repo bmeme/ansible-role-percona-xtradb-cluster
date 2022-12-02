@@ -4,17 +4,6 @@
     name: "{{ percona_mysql_daemon }}"
     state: stopped
 
-- name: "Create include directory {{ mysql_config_include_dir }}"
-  ansible.builtin.file:
-    path: "{{ mysql_config_include_dir }}"
-    state: directory
-    mode: '0755'
-
-- name: Load Percona configuration directory
-  ansible.builtin.lineinfile:
-    name: "{{ mysql_config_file }}"
-    line: "!includedir {{ mysql_config_include_dir }}"
-
 - name: Configure Percona XtraDB Cluster
   ansible.builtin.template:
     src: "{{ item.src }}"
@@ -25,8 +14,10 @@
   loop:
     - src: templates/mysqld.cnf.j2
       dest: "{{ mysql_config_include_dir }}/mysqld.cnf"
-    - src: "templates/wsrep.cnf.j2"
+    - src: templates/wsrep.cnf.j2
       dest: "{{ mysql_config_include_dir }}/wsrep.cnf"
+    - src: templates/mysqld_safe.cnf.j2
+      dest: "{{ mysql_config_include_dir }}/mysqld_safe.cnf"
 
 - name: Append extended configuration
   ansible.builtin.blockinfile:

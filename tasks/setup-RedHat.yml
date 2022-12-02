@@ -1,4 +1,21 @@
 ---
+- name: Ensure mysql group is set
+  ansible.builtin.group:
+    name: mysql
+    gid: 27
+    system: true
+
+- name: Ensure mysql user is set
+  ansible.builtin.user:
+    name: mysql
+    uid: 27
+    system: true
+    group: mysql
+    comment: 'MySQL Server'
+    home: "{{ mysql_datadir }}"
+    create_home: false
+    shell: /sbin/nologin
+
 - name: Ensure required packages are installed
   ansible.builtin.package:
     name: "{{ percona_required_packages }}"
@@ -13,7 +30,7 @@
     name: "{{ percona_repo_baseurl }}/{{ percona_repo_release }}.noarch.rpm"
     state: present
 
-- name: Install Percona XtraDB when not installed
+- name: Configure and install Percona XtraDB for first run
   block:
 
     - name: Ensure Percona pxc is enabled
@@ -24,6 +41,33 @@
       ansible.builtin.package:
         name: "{{ percona_packages }}"
         state: installed
+
+    - name: Ensure configuration include directory exists
+      ansible.builtin.file:
+        path: "{{ mysql_config_include_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Load Percona configuration directory
+      ansible.builtin.lineinfile:
+        name: "{{ mysql_config_file }}"
+        line: "!includedir {{ mysql_config_include_dir }}"
+
+    - name: Set custom mysql config for first run
+      ansible.builtin.lineinfile:
+        path: "{{ mysql_config_include_dir }}/mysqld.cnf"
+        state: present
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+      loop:
+        - regexp: "^.?datadir=*"
+          line: "datadir={{ mysql_datadir | quote }}"
+        - regexp: "^.?pid-file=*"
+          line: "pid-file={{ mysql_pid_file | quote }}"
+        - regexp: "^.?socket=*"
+          line: "socket={{ mysql_socket | quote }}"
+        - regexp: "^.?log-error=*"
+          line: "log-error={{ mysql_log_error | quote }}"
     
     - name: Ensure Mysql service is temporary started
       ansible.builtin.service:
