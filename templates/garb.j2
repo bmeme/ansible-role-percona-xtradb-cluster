@@ -4,7 +4,7 @@
 GALERA_NODES="{{ ip_without_arbiter | join(':4567 ') }}:4567"
 
 # Galera cluster name, should be the same as on the rest of the nodes.
-GALERA_GROUP="{{ percona_cluster.name }}"
+GALERA_GROUP="{{ percona_cluster_name }}"
 
 # Optional Galera internal options string (e.g. SSL settings)
 # see http://galeracluster.com/documentation-webpages/galeraparameters.html
