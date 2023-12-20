@@ -169,8 +169,6 @@ N/A
 	  ip_address: "{{ ansible_default_ipv4.address }}"
 	  
 ## GitHub Actions and molecule test
-A CI is not really active for this role (only a simple `ansible-lint`). This because (I don't know why...) `molecule test` breaks during execution in GitHub Action environment when mysql server is enabled. Out of GitHub Action the `molecule test` works well.
-
 We couldn't run the role's test steps via Molecule in the GitHub Action workflow. This because (for unknown reasons) executing a `molecule test` fails due to the inability to start MySQL with the following error:
 
 ```
