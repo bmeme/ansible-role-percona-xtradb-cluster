@@ -2,7 +2,7 @@
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)
 [![MIT license](https://img.shields.io/badge/License-MIT-blue.svg)](https://lbesson.mit-license.org/)
 
-Installs and configures Percona XtraDB Cluster (only 5.7 at this stage) on EL 7/8. This role takes in consideration a standard Galera architecture: three nodes minimum of which two act as server and one acts as arbitrator.
+Installs and configures Percona XtraDB Cluster (only 5.7 at this stage) on EL 8/9. This role takes in consideration a standard Galera architecture: three nodes minimum of which two act as server and one acts as arbitrator.
 
 This role, *at this stage*, **does** not support:
 
@@ -120,8 +120,7 @@ mysql_cluster_configuration: |-
 - EL 8
 - EL 9
 
-EOL 7 is no longer officially supported. As far as we know, the role can currently continue 
-to work properly on EL 7.9; we are unsure if it works on lower versions."
+EOL 7 is no longer officially supported. As far as we know, the role can currently continue to work properly on EL 7.9; however, we're uncertain whether it works on lower versions.
 
 ## Dependencies
 N/A
@@ -170,7 +169,15 @@ N/A
 	  ip_address: "{{ ansible_default_ipv4.address }}"
 	  
 ## GitHub Actions and molecule test
-A CI actions is not active for this role. This because (I don't know why...) role breaks during execution in GitHub action environment when mysql server is enabled. But molecule test works well.
+A CI is not really active for this role (only a simple `ansible-lint`). This because (I don't know why...) `molecule test` breaks during execution in GitHub Action environment when mysql server is enabled. Out of GitHub Action the `molecule test` works well.
+
+We couldn't run the role's test steps via Molecule in the GitHub Action workflow. This because (for unknown reasons) executing a `molecule test` fails due to the inability to start MySQL with the following error:
+
+```
+fatal: [test-cluster-03]: FAILED! => {"changed": false, "msg": "Unable to start service mysql: Job for mysql.service failed because the control process exited with error code.\nSee \"systemctl status mysql.service\" and \"journalctl -xe\" for details.\n"}
+```
+
+All molecule tests run outside the GitHub Action environment succeeded. As soon as this issue is resolved, we'll add the tests to the CI. Meanwhile, if you can assist us in debugging the problem, we would be infinitely and eternally grateful!
 
 ## License
 MIT / BSD
