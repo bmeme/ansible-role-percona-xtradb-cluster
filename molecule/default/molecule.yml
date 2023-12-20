@@ -2,7 +2,6 @@
 scenario:
   test_sequence:
     - dependency
-    - lint
     - cleanup
     - destroy
     - syntax
@@ -18,12 +17,9 @@ dependency:
   name: galaxy
 driver:
   name: docker
-lint: |
-  set -e
-  yamllint .
 platforms:
   - name: test-cluster-01 
-    image: "bmeme/docker-ansible-${MOLECULE_DISTRO:-centos:7.9}"
+    image: "bmeme/docker-ansible-${MOLECULE_DISTRO:-rockylinux:8.7-2.11}"
     command: "/usr/sbin/init"
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:rw
@@ -31,7 +27,7 @@ platforms:
     cgroupns_mode: host
     pre_build_image: true
   - name: test-cluster-02 
-    image: "bmeme/docker-ansible-${MOLECULE_DISTRO:-centos:7.9}"
+    image: "bmeme/docker-ansible-${MOLECULE_DISTRO:-rockylinux:8.7-2.11}"
     command: "/usr/sbin/init"
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:rw
@@ -39,7 +35,7 @@ platforms:
     cgroupns_mode: host
     pre_build_image: true
   - name: test-cluster-03 
-    image: "bmeme/docker-ansible-${MOLECULE_DISTRO:-centos:7.9}"
+    image: "bmeme/docker-ansible-${MOLECULE_DISTRO:-rockylinux:8.7-2.11}"
     command: "/usr/sbin/init"
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:rw
@@ -49,5 +45,8 @@ platforms:
 provisioner:
   name: ansible
   log: true
+  lint:
+    name: ansible-lint
+    enabled: true
 verifier:
   name: ansible

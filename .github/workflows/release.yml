@@ -1,8 +1,3 @@
-# This workflow requires a GALAXY_API_KEY secret present in the GitHub
-# repository or organization.
-#
-# See: https://github.com/marketplace/actions/publish-ansible-role-to-galaxy
-
 name: Ansible Role Percona XtraDB Cluster
 'on':
   push:

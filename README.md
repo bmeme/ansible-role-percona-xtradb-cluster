@@ -117,8 +117,11 @@ mysql_cluster_configuration: |-
 ```
 
 ## Supported Linux distro and versions
-- EL 7
 - EL 8
+- EL 9
+
+EOL 7 is no longer officially supported. As far as we know, the role can currently continue 
+to work properly on EL 7.9; we are unsure if it works on lower versions."
 
 ## Dependencies
 N/A
@@ -173,7 +176,7 @@ A CI actions is not active for this role. This because (I don't know why...) rol
 MIT / BSD
 
 ## Author Information
-This role was created in 2022 by [Bmeme](https://www.bmeme.com). It is actually maintained by [Daniele Piaggesi](https://github.com/g0blin79), [Roberto Mariani](https://github.com/jean-louis) and [Michele Mondelli](https://github.com/Mithenks)
+This role was created in 2022 by [Bmeme](https://www.bmeme.com). It is actually maintained by [Daniele Piaggesi](https://github.com/g0blin79) and [Roberto Mariani](https://github.com/jean-louis).
 
 ## Credits
 This role was really inspired by [csuka Ansible Role XtraDB Cluster](https://github.com/csuka/ansible_role_percona_xtradb_cluster).
