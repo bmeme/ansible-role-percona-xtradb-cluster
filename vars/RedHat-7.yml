@@ -1,5 +1,5 @@
 ---
-__percona_rpm_key_url: "https://www.percona.com/downloads/RPM-GPG-KEY-percona"
+__percona_rpm_key_url: "https://repo.percona.com/yum/RPM-GPG-KEY-Percona"
 __percona_repo_baseurl: "https://repo.percona.com/yum"
 __percona_repo_release: "percona-release-latest"
 __percona_version: "57"

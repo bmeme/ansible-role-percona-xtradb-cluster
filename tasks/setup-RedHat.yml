@@ -29,13 +29,23 @@
   ansible.builtin.package:
     name: "{{ percona_repo_baseurl }}/{{ percona_repo_release }}.noarch.rpm"
     state: present
+  when: 
+    - ansible_os_family == 'RedHat'
+    - ansible_distribution_major_version | int <= 8
+
+- name: Ensure Percona repositories are installed
+  ansible.builtin.shell: |
+    dnf -y install {{ percona_repo_baseurl }}/{{ percona_repo_release }}.noarch.rpm
+  when: 
+    - ansible_os_family == 'RedHat'
+    - ansible_distribution_major_version | int == 9
+
+- name: Ensure Percona pxc is enabled
+  ansible.builtin.command: "percona-release setup pxc{{ percona_version }} -y"
+  changed_when: false
 
 - name: Configure and install Percona XtraDB for first run
   block:
-
-    - name: Ensure Percona pxc is enabled
-      ansible.builtin.command: "percona-release setup pxc{{ percona_version }} -y"
-      changed_when: false
 
     - name: Ensure Percona XtraDB packages are installed
       ansible.builtin.package:
