@@ -19,7 +19,7 @@ driver:
   name: docker
 platforms:
   - name: test-cluster-01 
-    image: "bmeme/docker-ansible-${MOLECULE_DISTRO:-rockylinux:8.7-2.11}"
+    image: "bmeme/docker-ansible-${MOLECULE_DISTRO:-rockylinux:9.4-2.15}"
     command: "/usr/sbin/init"
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:rw
@@ -27,7 +27,7 @@ platforms:
     cgroupns_mode: host
     pre_build_image: true
   - name: test-cluster-02 
-    image: "bmeme/docker-ansible-${MOLECULE_DISTRO:-rockylinux:8.7-2.11}"
+    image: "bmeme/docker-ansible-${MOLECULE_DISTRO:-rockylinux:9.4-2.15}"
     command: "/usr/sbin/init"
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:rw
@@ -35,7 +35,7 @@ platforms:
     cgroupns_mode: host
     pre_build_image: true
   - name: test-cluster-03 
-    image: "bmeme/docker-ansible-${MOLECULE_DISTRO:-rockylinux:8.7-2.11}"
+    image: "bmeme/docker-ansible-${MOLECULE_DISTRO:-rockylinux:9.4-2.15}"
     command: "/usr/sbin/init"
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:rw
