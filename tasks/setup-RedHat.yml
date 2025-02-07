@@ -26,19 +26,9 @@
     key: "{{ percona_rpm_key_url }}"
 
 - name: Ensure Percona repositories are installed
-  ansible.builtin.package:
-    name: "{{ percona_repo_baseurl }}/{{ percona_repo_release }}.noarch.rpm"
-    state: present
-  when: 
-    - ansible_os_family == 'RedHat'
-    - ansible_distribution_major_version | int <= 8
-
-- name: Ensure Percona repositories are installed
-  ansible.builtin.shell: |
+  ansible.builtin.command: |
     dnf -y install {{ percona_repo_baseurl }}/{{ percona_repo_release }}.noarch.rpm
-  when: 
-    - ansible_os_family == 'RedHat'
-    - ansible_distribution_major_version | int == 9
+  changed_when: false
 
 - name: Ensure Percona pxc is enabled
   ansible.builtin.command: "percona-release setup pxc{{ percona_version }} -y"
