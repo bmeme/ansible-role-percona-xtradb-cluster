@@ -1,30 +1,37 @@
 # Ansible Role: Percona XtraDB Cluster
+![Workflow](https://github.com/bmeme/ansible-role-percona-xtradb-cluster/actions/workflows/ci.yml/badge.svg?branch=main)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)
 [![MIT license](https://img.shields.io/badge/License-MIT-blue.svg)](https://lbesson.mit-license.org/)
 
-Installs and configures Percona XtraDB Cluster (only 5.7 at this stage) on EL 8/9. This role takes in consideration a standard Galera architecture: three nodes minimum of which two act as server and one acts as arbitrator.
+This Ansible role installs and configures Percona XtraDB Cluster 8.x on Enterprise Linux 9 systems (RHEL, AlmaLinux, Rocky, etc.).
+It automates the bootstrap and synchronization of multi-master clusters, optionally including a Galera Arbitrator (garbd) for 2-node topologies.
 
-This role, *at this stage*, **does** not support:
+## Versin matrix 
+| Role Series | Percona Server version | Supported OS | Python | Ansible | Status |
+|-------------|------------------------|--------------|--------|---------|--------|
+|1.x|5.7 |EL 7 / 8 |3.6–3.9|<2.15|_Legacy_ (EOL for Percona 5.7)|
+|2.x|8.x |EL 9 |3.10 / 3.11|>2.15|_Current / Maintained_
+
+> Version 2.x drops support for Percona XtraDB Cluster 5.7 and older platforms. EL 9 is the only supported targets. Python 3.10 / 3.11 are required on the controller.
+
+## Currently not supported
 
 * **node scaling**: you cannot re-run this role on a pre-installed architecture to add one or more nodes.
 * **pmm**: You can add [PMM Client](https://docs.percona.com/percona-monitoring-and-management/setting-up/client/index.html) manually to your architecture.
-* **ssl**: You can [encrypt your PXC traffic](https://docs.percona.com/percona-xtradb-cluster/5.7/security/encrypt-traffic.html) manually
-
-Some approaches used in this role are definitely inspired by the excellent work of `csuka/ansible_role_percona_xtradb_cluster`, available [here](https://github.com/csuka/ansible_role_percona_xtradb_cluster). But the implementation needs were different, so that we decided to open a new project: other that, the `csuka` project supports only EL8 and Percona 8.0. Hopefully, in a near future, these project could be merged.
-
 
 ## Requirements
-No special requirements; note that this role requires root access, so either run it in a playbook with a global `become: yes`, or invoke the role in your playbook like:
+* Root privileges (use `become: true`)
+* SSH connectivity between nodes
+* Static IP addresses (required by Galera)
 
 ```yaml
 - hosts: database
+  become: true
   roles:
     - role: bmeme.percona_xtradb_cluster
-      become: yes
 ```
-
-Copy the variables from `default/main.yml` and adjust them for **each node** in it's variable folder.
-Take a look at the `molecule/default/group_vars` and `molecule/default/host_vars` folder to have an idea of how to configure every single node of your cluster architecture.
+You must define per-node variables inside `host_vars/`.
+See `molecule/default/group_vars` and `molecule/default/host_vars` for working examples.
 
 ## Installation
 This is an Ansible role distributed using Ansible Galaxy. In order to install this role you can use the following command.
@@ -36,10 +43,13 @@ If you want to update the role, you need to pass --force parameter when installi
 
 `$ ansible-galaxy install --force bmeme.percona_xtradb_cluster `
 
-## Clustering
-When there are at least 2 nodes in the play, a multi-master cluster is possible. A 2 node galera cluster is a fundamentally broken design, as it cannot maintain uptime without a quorum and the ability of a node to go down to aid recovery. 
+## Clustering model
+When two or more nodes are defined, a multi-master Galera cluster is formed.
+A 2-node cluster requires an arbitrator node (`garbd`) to maintain quorum and prevent split-brain conditions.
 
-## Role Variables 
+## Roles variables
+
+### Cluster node configuration
 
 ```yaml
 percona_cluster:
@@ -48,17 +58,21 @@ percona_cluster:
   server_id: '1'
   ip_address: "{{ ansible_default_ipv4.address }}"
 ```
-The `percona_cluster` object is what you really need to configure for each node:
 
-* **role**: *string*. Defines what is the role of the specific node. Could be *master* or *arbiter*. If you have three or more nodes dedicated to your cluster, all of them could be *master*. If you want to have only two nodes in the cluster and use an arbiter (installable on any other server in your infrastructure), you will have two nodes as *master* and one as *arbiter*
-* **bootstrapper**: *boolean*. Defines the node responsible for bootstrapping the cluster. **Pay attention**: there must only be one bootstrapper and cannot be the arbiter!!! There is no assertion in the role to check any of that (at this stage).
-* **server_id**: *int*. Defines the unique ID of a node. **Pay attention**: this is a **unique id**! Do not use the same ID for more than a node. There isn't any assertion in the role to check this (always at this stage).
-* **ip_address**: *string*. Defines the IP Address of the node. To automatically calculate IPv4 address of a node, use `{{ ansible_default_ipv4.address }}` ansible variable as used in `default/main.yml` file.
+| Key | Type | Description |
+|-----|------|-------------|
+| `role` | string | Node type: `master` or `arbiter` |
+| `bootstrapper` | bool | Whether this node bootstraps the cluster (only **one node** should be `true`) |
+| `server_id` | int | Unique server ID (must differ across nodes) |
+| `ip_address` | string | Node IP address. Use `{{ ansible_default_ipv4.address }}` for automatic detection
+
+### Cluster identity
 
 ```yaml
 percona_cluster_name: "galera-cluster"
 ```
-Defines the name you want to have your cluster. Change it at your need.
+
+### Authentication
 
 ```yaml
 percona_root_user: "root"
@@ -66,122 +80,121 @@ percona_root_password: "S3cr3tS/$"
 percona_sst_user: "sstuser"
 percona_sst_password: "S3cr3tS/$"
 ```
-Defines `root` user/password and `sst` user/password. `sst` is the user responsible for replication transactions between nodes.
+
+where:
+* `root`: administrative access
+* `sstuser`: used for **SST replication** between nodes
+
+### Databases and users
 
 ```yaml
 percona_databases:
-  - mynewbranddb
+  - myappdb
 
 percona_users:
-  - name: mynewbranddb_user
-    password: "yie?XuiNaedu"
-    privs: 'mynewbranddb.*:ALL,GRANT'
-    state: present
-    encrypted: false
-    host: '%'
+  - name: myapp_user
+    password: "MyP@ssw0rd!"
+    privs: "myappdb.*:ALL,GRANT"
+    host: "%"
 ```
-Create databases and/or users during the role execution. Leave blank to skip. Databases and users are created only on bootstrapper node.
+
+These are created **only on the bootstrap node**.
+
+### Base MySQL settings
 
 ```yaml
-# Datafile directory.
 mysql_datadir: "/var/lib/mysql"
-
-# Address on which mysql bind to
 mysql_bind_address: "{{ percona_cluster.ip_address }}"
-
-# Mysql symbolic links configuration
 mysql_symbolic_links: 0
-
-# pxc_strict_mode allowed values: DISABLED,PERMISSIVE,ENFORCING,MASTER
 mysql_cluster_pxc_strict_mode: ENFORCING
 ```
-Basic Mysqld configuration. 
 
-```yaml
-# All specific configuration items
-# Example:
-#
-# mysql_cluster_configuration: |-
-#   max_allowed_packet=64M
-#
-mysql_cluster_configuration: ""
-```
-This allows to add custom configuration to `mysqld.conf` file, stored in `/etc/percona-xtradb-cluster.conf.d` directory. Add `mysqld` configuration items exactly as if you were putting them in `mysqld.conf` file.
-
-Here an example of advanced configurations:
+### Extended configuration (inline block)
 
 ```yaml
 mysql_cluster_configuration: |-
   max_allowed_packet=64M
-  some_other_conf=some_other_value
+  innodb_buffer_pool_size=512M
 ```
 
-## Supported Linux distro and versions
-- EL 8
-- EL 9
+The block is appended into `/etc/my.cnf.d/20-mysqld-core.cnf`.
 
-EOL 7 is no longer officially supported. As far as we know, the role can currently continue to work properly on EL 7.9; however, we're uncertain whether it works on lower versions.
+### SSL/TLS for replication
 
-## Dependencies
-N/A
+If `percona_ssl_enabled: true`, the role:
+* copies SSL certificates (`ca.pem`, `server-cert.pem`, `server-key.pem`) from the bootstrapper node,
+* distributes them across all nodes and configures Galera’s `socket.ssl_*` options,
+* configures `garbd` to use the same certificates.
 
-## Example Playbook
-    - hosts: db-servers
-      become: yes
-      roles:
-        - { role: bmeme.percona_xtradb_cluster }
+Example:
 
-*Inside `group_vars/all.yml`*:
-
-	percona_databases:
-	  - mynewbranddb
-	
-	percona_users:
-	  - name: mynewbranddb_user
-	    password: "yie?XuiNaedu"
-	    privs: 'mynewbranddb.*:ALL,GRANT'
-	    state: present
-	    encrypted: false
-	    host: '%'
-	    
-*Inside `host_vars/master01.yml`*:
-	
-	percona_cluster:
-	  role: master
-	  bootstrapper: true
-	  server_id: '1'
-	  ip_address: "{{ ansible_default_ipv4.address }}"
-
-*Inside `host_vars/master02.yml`*:
-	
-	percona_cluster:
-	  role: master
-	  bootstrapper: false
-	  server_id: '2'
-	  ip_address: "{{ ansible_default_ipv4.address }}"
-	  
-*Inside `host_vars/arbiter.yml`*:
-	
-	percona_cluster:
-	  role: arbiter
-	  bootstrapper: false
-	  server_id: '3'
-	  ip_address: "{{ ansible_default_ipv4.address }}"
-	  
-## GitHub Actions and molecule test
-We couldn't run the role's test steps via Molecule in the GitHub Action workflow. This because (for unknown reasons) executing a `molecule test` fails due to the inability to start MySQL with the following error:
-
-```
-fatal: [test-cluster-03]: FAILED! => {"changed": false, "msg": "Unable to start service mysql: Job for mysql.service failed because the control process exited with error code.\nSee \"systemctl status mysql.service\" and \"journalctl -xe\" for details.\n"}
+```yaml
+percona_ssl_enabled: true
 ```
 
-All molecule tests run outside the GitHub Action environment succeeded. As soon as this issue is resolved, we'll add the tests to the CI. Meanwhile, if you can assist us in debugging the problem, we would be infinitely and eternally grateful!
+## Supported platforms
+* EL 9 (RHEL, Almalinux, Rocky)
+
+## Example inventory structure
+
+```css
+inventory/
+├── group_vars/
+│   └── all.yml
+├── host_vars/
+│   ├── master01.yml
+│   ├── master02.yml
+│   └── arbiter.yml
+└── playbook.yml
+```
+
+### `groups_vars/all.yml`
+
+```yaml
+percona_databases:
+  - mynewbranddb
+percona_users:
+  - name: mynewbranddb_user
+    password: "yie?XuiNaedu"
+    privs: "mynewbranddb.*:ALL,GRANT"
+    host: "%"
+```
+
+### `hosts_var/master01.yml`
+
+```yaml
+percona_cluster:
+  role: master
+  bootstrapper: true
+  server_id: 1
+  ip_address: "{{ ansible_default_ipv4.address }}"
+```
+
+### `host_vars/arbiter.yml`
+
+```yaml
+percona_cluster:
+  role: arbiter
+  bootstrapper: false
+  server_id: 3
+  ip_address: "{{ ansible_default_ipv4.address }}"
+```
+
+## CI / Molecule testing
+
+Due to systemd and container limitations, GitHub Actions currently cannot fully start MySQL under Molecule.
+All tests succeed locally via molecule test.
+If you have ideas or patches to make CI integration work, PRs are welcome!
+
+## Author & Maintainers
+
+Created by [Bmeme](https://www.bmeme.com)
+Maintained by:
+* [Daniele Piaggesi](mailto:daniele.piaggesi@bmeme.com)
+* [Roberto Mariani](mailto:roberto.mariani@bmeme.com)
 
 ## License
-MIT / BSD
-
-## Author Information
-This role was created in 2022 by [Bmeme](https://www.bmeme.com). It is actually maintained by [Daniele Piaggesi](https://github.com/g0blin79) and [Roberto Mariani](https://github.com/jean-louis).
+MIT/BSD dual license
 
 ## Credits
-This role was really inspired by [csuka Ansible Role XtraDB Cluster](https://github.com/csuka/ansible_role_percona_xtradb_cluster).
+Role inspired by [csuka/ansible_role_percona_xtradb_cluster](https://github.com/csuka/ansible_role_percona_xtradb_cluster)

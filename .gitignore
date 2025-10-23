@@ -1,2 +1,63 @@
-.vscode
-.idea
+# --- Ansible role defaults ---
+*.retry
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+.cache/
+*.log
+
+# --- Molecule ---
+.molecule/
+.molecule_logs/
+molecule/*/logs/
+molecule/*/.molecule/
+molecule/*/cache/
+molecule/*/.cache/
+molecule/*/.pytest_cache/
+molecule/*/.tox/
+molecule/*/.venv/
+
+# --- Python virtualenv ---
+.venv/
+venv/
+ENV/
+env/
+env.bak/
+pip-wheel-metadata/
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# --- tox ---
+.tox/
+.coverage
+.coverage.*
+htmlcov/
+.mypy_cache/
+pytest_cache/
+.pytest_cache/
+.mutmut-cache/
+.nox/
+.nosetests.xml
+
+# --- Editor / IDE ---
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# --- OS / misc ---
+Thumbs.db
+ehthumbs.db
+Icon?
+desktop.ini
+
+# --- Collections / galaxy build output ---
+*.tar.gz
+*.zip
+ansible_collections/
+.ansible

@@ -1,14 +1,20 @@
 {{ ansible_managed | comment }}
 
 # A comma-separated list of node addresses (address[:port]) in the cluster
-GALERA_NODES="{{ ip_without_arbiter | join(':4567 ') }}:4567"
+GALERA_NODES="{{ ip_without_arbiter
+  | map('regex_replace', '^(.*)$', '\\1:4567')
+  | join(',') }}"
 
 # Galera cluster name, should be the same as on the rest of the nodes.
 GALERA_GROUP="{{ percona_cluster_name }}"
 
 # Optional Galera internal options string (e.g. SSL settings)
 # see http://galeracluster.com/documentation-webpages/galeraparameters.html
-# GALERA_OPTIONS=""
+{% if percona_ssl_enabled | bool %}
+GALERA_OPTIONS="socket.ssl=YES;socket.ssl_ca=/etc/ssl/mysql/ca.pem;socket.ssl_cert=/etc/ssl/mysql/server-cert.pem;socket.ssl_key=/etc/ssl/mysql/server-key.pem"
+{% else %}
+GALERA_OPTIONS=""
+{% endif %}
 
 # Log file for garbd. Optional, by default logs to syslog
 # Deprecated for CentOS7, use journalctl to query the log for garbd

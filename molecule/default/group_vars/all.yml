@@ -13,7 +13,7 @@ mysql_datadir: "/var/lib/clustered-mysql"
 mysql_socket: "/var/lib/clustered-mysql/mysql.sock"
 
 mysql_cluster_configuration: |-
-  log_warnings=2
+  log_error_verbosity=2
   userstat=1
   slow_query_log=1
   long_query_time=10
@@ -34,8 +34,6 @@ mysql_cluster_configuration: |-
   default_storage_engine=InnoDB
   # INNODB options #####
   innodb_strict_mode=on
-  innodb_file_format_check=1
-  innodb_file_format=Barracuda
   innodb_buffer_pool_size=4G
   innodb_buffer_pool_instances=8
   innodb_file_per_table=on

@@ -2,7 +2,7 @@
 __percona_rpm_key_url: "https://repo.percona.com/yum/RPM-GPG-KEY-Percona"
 __percona_repo_baseurl: "https://repo.percona.com/yum"
 __percona_repo_release: "percona-release-latest"
-__percona_version: "57"
+__percona_version: "80"
 __percona_mysql_daemon: mysql
 __percona_arbiter_daemon: garb
 __percona_required_packages:
@@ -13,19 +13,15 @@ __percona_required_packages:
   - openssl
   - diffutils
   - iproute
-__percona_packages_57:
-  - Percona-XtraDB-Cluster-57
-  - percona-xtrabackup-24
 __percona_packages_80:
   - percona-xtradb-cluster
-__percona_arbiter_packages_57:
-  - Percona-XtraDB-Cluster-garbd-57
+  - percona-xtrabackup-80
 __percona_arbiter_packages_80:
   - percona-xtradb-cluster-garbd
 __mysql_log_file_group: mysql
 __mysql_log_error: /var/log/mysqld.log
 __mysql_pid_file: /var/run/mysqld/mysqld.pid
 __mysql_config_file: /etc/my.cnf
-__mysql_config_include_dir: /etc/percona-xtradb-cluster.conf.d/
+__mysql_config_include_dir: /etc/my.cnf.d
 __mysql_socket: /var/lib/mysql/mysql.sock
 __garb_config_file: "/etc/sysconfig"
