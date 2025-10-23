@@ -17,3 +17,16 @@
     name: "{{ percona_arbiter_daemon }}"
     state: started
     enabled: true
+  register: garb_start
+  failed_when: false
+  changed_when: garb_start is changed
+
+- name: Wait until garb is active
+  ansible.builtin.systemd:
+    name: garb
+  register: garb_status
+  retries: 10
+  delay: 3
+  until: garb_status.status.ActiveState == "active"
+  changed_when: false
+  failed_when: garb_status.status.ActiveState != "active"

@@ -49,10 +49,23 @@
     ip_without_arbiter: "{{ all_ips.split(',') }}"
   when: run_on is undefined
 
-# - name: debug
-#   ansible.builtin.debug:
-#     var: "{{ item }}"
-#   loop:
-#     - arbiter
-#     - bootstrapper
-#     - ip_without_arbiter
+- name: ip addr | determine bootstrap host
+  ansible.builtin.set_fact:
+    pxc_bootstrap_host: "{{ item }}"
+  loop: "{{ ansible_play_hosts_all }}"
+  when: >
+    (
+      hostvars[item].percona_cluster is defined and
+      (hostvars[item].percona_cluster.bootstrapper | default(false) | bool)
+    )
+    or
+    (hostvars[item].bootstrapper | default(false) | bool)
+  run_once: true
+  delegate_to: localhost
+
+- name: Fail if no bootstrap host was found
+  ansible.builtin.fail:
+    msg: "Cannot determine pxc_bootstrap_host (no host with bootstrapper=true)."
+  when: pxc_bootstrap_host is not defined
+  run_once: true
+  delegate_to: localhost
