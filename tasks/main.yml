@@ -20,6 +20,10 @@
   ansible.builtin.include_tasks: configure.yml
   when: not arbiter
 
+- name: Enable SSL artifacts
+  ansible.builtin.include_tasks: ssl.yml
+  when: percona_ssl_enabled
+
 - name: Enable cluster
   ansible.builtin.include_tasks: cluster.yml
   when: not arbiter

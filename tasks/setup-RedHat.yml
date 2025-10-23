@@ -16,6 +16,14 @@
     create_home: false
     shell: /sbin/nologin
 
+- name: Ensure datadir exists with right perms
+  ansible.builtin.file:
+    path: "{{ mysql_datadir }}"
+    state: directory
+    owner: mysql
+    group: mysql
+    mode: "0750"
+
 - name: Ensure required packages are installed
   ansible.builtin.package:
     name: "{{ percona_required_packages }}"
@@ -34,7 +42,7 @@
   ansible.builtin.command: "percona-release setup pxc{{ percona_version }}"
   changed_when: false
 
-- name: Configure and install Percona XtraDB for first run
+- name: Configure and install Percona XtraDB
   block:
 
     - name: Ensure Percona XtraDB packages are installed
@@ -42,36 +50,29 @@
         name: "{{ percona_packages }}"
         state: installed
 
- #   - name: Ensure configuration include directory exists
-#      ansible.builtin.file:
- #       path: "{{ mysql_config_include_dir }}"
- #       state: directory
- #       mode: '0755'
+    - name: Ensure configuration include directory exists
+      ansible.builtin.file:
+        path: "{{ mysql_config_include_dir }}"
+        state: directory
+        mode: '0755'
 
-#    - name: Load Percona configuration directory
-#      ansible.builtin.lineinfile:
-#        name: "{{ mysql_config_file }}"
-#        line: "!includedir {{ mysql_config_include_dir }}"
-
-    - name: Set custom mysql config for first run
+    - name: Load Percona configuration directory
       ansible.builtin.lineinfile:
-        path: "{{ xtradb_config_file }}"
-        state: present
-        regexp: "{{ item.regexp }}"
-        line: "{{ item.line }}"
+        name: "{{ mysql_config_file }}"
+        line: "!includedir {{ mysql_config_include_dir }}"
+
+    - name: Deploy base configs
+      ansible.builtin.template:
+        src: "{{ item.src }}"
+        dest: "{{ mysql_config_include_dir }}/{{ item.dest }}"
+        mode: '0644'
       loop:
-        - regexp: "^.?datadir=*"
-          line: "datadir={{ mysql_datadir | quote }}"
-        - regexp: "^.?pid-file=*"
-          line: "pid-file={{ mysql_pid_file | quote }}"
-        - regexp: "^.?socket=*"
-          line: "socket={{ mysql_socket | quote }}"
-        - regexp: "^.?log-error=*"
-          line: "log-error={{ mysql_log_error | quote }}"
-    
+        - { src: '10-client.cnf.j2',      dest: '10-client.cnf' }
+        - { src: '20-mysqld-core.cnf.j2', dest: '20-mysqld-core.cnf' }
+
     - name: Ensure Mysql service is temporary started
       ansible.builtin.service:
         name: "{{ percona_mysql_daemon }}"
         state: started
-
+        
   when: not arbiter

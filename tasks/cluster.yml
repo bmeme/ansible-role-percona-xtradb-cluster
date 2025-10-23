@@ -1,5 +1,6 @@
 ---
 - name: Start Bootstrapper
+  when: bootstrapper
   block:
 
     - name: Start Bootstrapper node
@@ -16,9 +17,9 @@
         priv: "*.*:grant,reload,lock tables,process,replication client"
       no_log: "{{ percona_no_log }}"
   
-  when: bootstrapper
 
 - name: Start Others
+  when: not bootstrapper
   block:
 
     - name: Start other nodes
@@ -30,14 +31,16 @@
       ansible.builtin.pause:
         seconds: 3
 
-  when: not bootstrapper
 
 - name: Verify if wsrep is successfull
-  ansible.builtin.shell: >
-    mysql -e "show status like 'wsrep%';" |
-    grep wsrep_local_state_comment
+  ansible.builtin.shell: |
+    set -o pipefail
+    mysql -e "SHOW STATUS LIKE 'wsrep_local_state_comment';" | grep "wsrep_local_state_comment"
+  args:
+    executable: /bin/bash
   register: __percona_cluster_wsrep_check_one
-  changed_when: __percona_cluster_wsrep_check_one.rc != 0
+  changed_when: false
+  failed_when: __percona_cluster_wsrep_check_one.rc != 0
 
 - name: Verify if cluster is synced
   ansible.builtin.fail:

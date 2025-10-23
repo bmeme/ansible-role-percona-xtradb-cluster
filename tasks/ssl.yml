@@ -1,0 +1,63 @@
+---
+- name: Check SSL files on primary
+  ansible.builtin.stat:
+    path: "{{ item }}"
+  loop:
+    - "{{ mysql_datadir }}/ca.pem"
+    - "{{ mysql_datadir }}/server-cert.pem"
+    - "{{ mysql_datadir }}/server-key.pem"
+  register: ssl_stats
+  run_once: true
+  delegate_to: "{{ pxc_bootstrap_host }}"
+
+- name: Fail if any SSL artifact is missing on primary
+  ansible.builtin.fail:
+    msg: "Missing SSL artifact(s) on primary: {{ (ssl_stats.results | rejectattr('stat.exists') | map(attribute='item') | list) }}"
+  when: (ssl_stats.results | rejectattr('stat.exists') | list | length) > 0
+  run_once: true
+
+- name: Slurp Galera SSL artifacts from primary
+  ansible.builtin.slurp:
+    src: "{{ item }}"
+  register: ssl_blobs
+  loop:
+    - "{{ mysql_datadir }}/ca.pem"
+    - "{{ mysql_datadir }}/server-cert.pem"
+    - "{{ mysql_datadir }}/server-key.pem"
+  run_once: true
+  delegate_to: "{{ pxc_bootstrap_host }}"
+
+- name: Ensure certificates directory exists with right perms on arbitrator
+  ansible.builtin.file:
+    path: "/etc/ssl/mysql/"
+    state: directory
+    owner: nobody
+    group: nobody
+    mode: "0750"
+  when: arbiter
+
+- name: Distribute SSL artifacts to all joiner
+  ansible.builtin.copy:
+    dest: "{{ mysql_datadir }}/{{ item.path | basename }}"
+    content:  "{{ (ssl_blobs.results | selectattr('item', 'equalto', item.path) | first).content | b64decode }}"
+    owner: mysql
+    group: mysql
+    mode: "{{ '0600' if item.path.endswith('.key') else '0644' }}"
+  loop:
+    - { path: "{{ mysql_datadir }}/ca.pem" }
+    - { path: "{{ mysql_datadir }}/server-cert.pem" }
+    - { path: "{{ mysql_datadir }}/server-key.pem" }
+  when: not bootstrapper and not arbiter
+
+- name: Distribute SSL artifacts to arbitrator
+  ansible.builtin.copy:
+    dest: "/etc/ssl/mysql/{{ item.path | basename }}"
+    content:  "{{ (ssl_blobs.results | selectattr('item', 'equalto', item.path) | first).content | b64decode }}"
+    owner: nobody
+    group: nobody
+    mode: "{{ '0600' if item.path.endswith('.key') else '0644' }}"
+  loop:
+    - { path: "{{ mysql_datadir }}/ca.pem" }
+    - { path: "{{ mysql_datadir }}/server-cert.pem" }
+    - { path: "{{ mysql_datadir }}/server-key.pem" }
+  when: arbiter

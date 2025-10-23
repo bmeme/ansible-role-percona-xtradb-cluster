@@ -11,11 +11,12 @@ percona_no_log: true
 percona_databases: []
 percona_users: []
 
-## Percona root user/password
+## Percona variables
 percona_root_user: "root"
 percona_root_password: "S3cr3tS/$"
 percona_sst_user: "sstuser"
 percona_sst_password: "S3cr3tS/$"
+percona_ssl_enabled: false
 
 # Datafile directory.
 mysql_datadir: "/var/lib/mysql"

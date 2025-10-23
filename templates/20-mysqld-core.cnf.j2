@@ -1,0 +1,14 @@
+{{ ansible_managed | comment }}
+[mysqld]
+user = mysql
+datadir = {{ mysql_datadir }}
+pid-file = {{ mysql_pid_file }}
+socket = {{ mysql_socket }}
+bind-address = {{ percona_cluster.ip_address }}
+log-error = {{ mysql_log_error }}
+
+# Binlog/replica
+log-bin
+log_replica_updates
+# Binary log expiration period (7 days)
+binlog_expire_logs_seconds = 604800
