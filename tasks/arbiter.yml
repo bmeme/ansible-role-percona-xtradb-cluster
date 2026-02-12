@@ -1,4 +1,25 @@
 ---
+- name: Ensure each runlevel has a directory
+  ansible.builtin.stat:
+    path: "/etc/{{ item }}"
+  register: rcdirs
+  loop: "{{ redhat_enabled_runlevels }}"
+
+- name: Backup existing runlevel directory if needed
+  ansible.builtin.command: "mv /etc/{{ item }} /etc/{{ item }}.backup"
+  loop: "{{ redhat_enabled_runlevels }}"
+  loop_control:
+    index_var: idx
+  changed_when: false
+  when: rcdirs.results[idx].stat.isdir | default(false)
+
+- name: Ensure specific runlevel symlink exists
+  ansible.builtin.file:
+    src: /usr/lib/systemd/system
+    dest: "/etc/{{ item }}"
+    state: link
+  loop: "{{ redhat_enabled_runlevels }}"
+
 - name: Install arbiter
   ansible.builtin.package:
     name: "{{ percona_arbiter_packages }}"

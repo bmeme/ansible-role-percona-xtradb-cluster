@@ -10,6 +10,11 @@
         - "vars/{{ ansible_os_family }}.yml"
       skip: true
 
+- name: Define RedHat enabled runlevels.
+  ansible.builtin.set_fact:
+    redhat_enabled_runlevels: "{{ __redhat_enabled_runlevels | list }}"
+  when: redhat_enabled_runlevels is not defined
+
 - name: Define percona_rpm_key_url.
   ansible.builtin.set_fact:
     percona_rpm_key_url: "{{ __percona_rpm_key_url }}"

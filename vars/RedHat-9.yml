@@ -1,4 +1,12 @@
 ---
+__redhat_enabled_runlevels:
+  - rc0.d
+  - rc1.d
+  - rc2.d
+  - rc3.d
+  - rc4.d
+  - rc5.d
+  - rc6.d
 __percona_rpm_key_url: "https://repo.percona.com/yum/RPM-GPG-KEY-Percona"
 __percona_repo_baseurl: "https://repo.percona.com/yum"
 __percona_repo_release: "percona-release-latest"
