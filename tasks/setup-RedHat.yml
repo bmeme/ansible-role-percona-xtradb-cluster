@@ -11,7 +11,7 @@
     uid: 27
     system: true
     group: mysql
-    comment: 'MySQL Server'
+    comment: "MySQL Server"
     home: "{{ mysql_datadir }}"
     create_home: false
     shell: /sbin/nologin
@@ -38,13 +38,46 @@
     dnf -y install {{ percona_repo_baseurl }}/{{ percona_repo_release }}.noarch.rpm
   changed_when: false
 
+- name: Enable Percona tools repository
+  ansible.builtin.lineinfile:
+    path: /etc/default/percona-release
+    regexp: "^REPOSITORIES="
+    line: 'REPOSITORIES="original tools"'
+    create: true
+    mode: "0644"
+    owner: root
+    group: root
+
+- name: Ensure that runlevel directories/symlinks are properly configured
+  block:
+    - name: Ensure that each runlevel has a directory
+      ansible.builtin.stat:
+        path: "/etc/{{ item }}"
+      register: rcdirs
+      loop: "{{ redhat_enabled_runlevels }}"
+
+    - name: Backup existing runlevel directory if needed
+      ansible.builtin.command: "mv /etc/{{ item }} /etc/{{ item }}.backup"
+      loop: "{{ redhat_enabled_runlevels }}"
+      loop_control:
+        index_var: idx
+      changed_when: false
+      when: rcdirs.results[idx].stat.isdir | default(false)
+
+    - name: Ensure specific runlevel symlink exists
+      ansible.builtin.file:
+        src: /usr/lib/systemd/system
+        dest: "/etc/{{ item }}"
+        state: link
+      loop: "{{ redhat_enabled_runlevels }}"
+
 - name: Ensure Percona pxc is enabled
   ansible.builtin.command: "percona-release setup pxc{{ percona_version }}"
   changed_when: false
 
 - name: Configure and install Percona XtraDB
+  when: not arbiter
   block:
-
     - name: Ensure Percona XtraDB packages are installed
       ansible.builtin.package:
         name: "{{ percona_packages }}"
@@ -54,7 +87,13 @@
       ansible.builtin.file:
         path: "{{ mysql_config_include_dir }}"
         state: directory
-        mode: '0755'
+        mode: "0755"
+
+    - name: Ensure Percona 8 main config file exists
+      ansible.builtin.file:
+        path: "{{ mysql_config_file }}"
+        state: touch
+        mode: "0644"
 
     - name: Load Percona configuration directory
       ansible.builtin.lineinfile:
@@ -65,14 +104,12 @@
       ansible.builtin.template:
         src: "{{ item.src }}"
         dest: "{{ mysql_config_include_dir }}/{{ item.dest }}"
-        mode: '0644'
+        mode: "0644"
       loop:
-        - { src: '10-client.cnf.j2',      dest: '10-client.cnf' }
-        - { src: '20-mysqld-core.cnf.j2', dest: '20-mysqld-core.cnf' }
+        - { src: "10-client.cnf.j2", dest: "10-client.cnf" }
+        - { src: "20-mysqld-core.cnf.j2", dest: "20-mysqld-core.cnf" }
 
     - name: Ensure Mysql service is temporary started
       ansible.builtin.service:
         name: "{{ percona_mysql_daemon }}"
         state: started
-        
-  when: not arbiter
