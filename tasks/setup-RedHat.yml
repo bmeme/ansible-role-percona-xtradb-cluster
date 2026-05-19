@@ -78,6 +78,10 @@
 - name: Configure and install Percona XtraDB
   when: not arbiter
   block:
+    - name: Ensure Percona XtraBackup repository is enabled
+      ansible.builtin.command: "percona-release enable pxb-{{ percona_version }}"
+      changed_when: false
+
     - name: Ensure Percona XtraDB packages are installed
       ansible.builtin.package:
         name: "{{ percona_packages }}"
