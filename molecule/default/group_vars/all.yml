@@ -11,6 +11,7 @@ percona_users:
 
 mysql_datadir: "/var/lib/clustered-mysql"
 mysql_socket: "/var/lib/clustered-mysql/mysql.sock"
+mysql_log_error: "/var/lib/clustered-mysql/mysql-error.log"
 
 mysql_cluster_configuration: |-
   log_error_verbosity=2
